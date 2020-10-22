@@ -1,27 +1,32 @@
 import multiprocessing 
 
-primes = [2,3,5,7,11,13,17,19,23,29,31,37]
-def isPrime(num): 
-    for i in range(len(primes)): 
-        if num % primes[i] == 0:
-            return -1
-        elif i == len(primes)-1:
-            return num 
+def isPrime(num):
+    pf = open('primes.txt', 'r')
+    primes = pf.read().splitlines()
+    for i in primes:
+        prime = int(i)
+        if num % prime == 0:
+            break
+        elif primes.index(i) == len(primes)-1:
+            pf = open('primes.txt','a+')
+            pf.write(str(num) + '\n')
+    pf.close()
 
-lim = int(input("Find primes from 0 to...? ")) 
-print("Working...")
+def runP(i):
+    while True:
+        isPrime(i)
+        i += 2 * cores
 
 if __name__ == '__main__':
-    cand = []
-    p = multiprocessing.Pool() 
-    for i in range(39, lim+1, 24):
-        for j in range(i,i+24,2):
-            cand.append(j)
-        result = p.map(isPrime, cand)
-        for r in result:
-            if r > 0: 
-                primes.append(r) 
-        cand.clear() 
-        result.clear()
+    pf = open('primes.txt', 'r')
+    l = pf.read().splitlines()
+    start = int(l.pop(len(l)-1))+2
+    
+    cores = multiprocessing.cpu_count()
+    procs = []
+    for i in range(cores):
+        procs.append(start)
+        start += 2
 
-    print(primes)
+    with multiprocessing.Pool(processes=cores) as p:
+            p.map(runP, procs)
